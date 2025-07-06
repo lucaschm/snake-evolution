@@ -9,6 +9,9 @@ class Movement():
     DOWN = np.array([0, 1])
     RIGHT = np.array([1, 0])
 
+    def equals(a, b):
+        return (a == b).all()
+
 class Map():
     def __init__(self, width, height):
         self.width = width
@@ -36,7 +39,7 @@ class Snake():
         self.direction = Movement.UNCHANGED
 
     def opposite_direction(self, move:Movement) -> bool:
-        return (move + self.direction == Movement.UNCHANGED).all()
+        return Movement.equals(move + self.direction, Movement.UNCHANGED)
 
     def update_direction(self, move:Movement):
         if (move != Movement.UNCHANGED).any() and not self.opposite_direction(move):
