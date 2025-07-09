@@ -36,7 +36,7 @@ class Map():
 class Snake():
     def __init__(self, x, y) -> None:
         self.body = [np.array([x, y])]
-        self.direction = Movement.UNCHANGED
+        self.direction = Movement.RIGHT
 
     def opposite_direction(self, move:Movement) -> bool:
         return Movement.equals(move + self.direction, Movement.UNCHANGED)
@@ -69,7 +69,7 @@ class Game():
     def __init__(self, width, height) -> None:
         self.map = Map(width, height)
         center = self.map.get_center_coordinates()
-        self.snake = Snake(x=center[0], y=center[1])
+        self.snake = Snake(x=0, y=center[1])
         self.food = None
         self.generate_food()
         self.game_over = False
@@ -87,7 +87,6 @@ class Game():
         next_head = self.snake.get_next_head()
 
         if (self.map.is_boundry(next_head) or self.snake.is_snake_body(next_head)):
-            print("Game Over!")
             self.game_over = True
         elif (next_head == self.food).all():
             self.snake.move(growing=True)
