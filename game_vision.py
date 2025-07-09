@@ -22,10 +22,30 @@ class GameVision():
         direction = self.game.snake.direction
         return Movement.equals(direction, Movement.RIGHT)
 
+    def get_upwards_distance_to_boundry(self) -> float:
+        head = self.game.snake.head()
+        y = head[1]
+        return y
+
+    def get_left_distance_to_boundry(self) -> float:
+        head = self.game.snake.head()
+        x = head[0]
+        return x
+
+    def get_downwards_distance_to_boundry(self) -> float:
+        head = self.game.snake.head()
+        y = head[1]
+        return self.height - 1 - y 
+
+    def get_right_distance_to_boundry(self) -> float:
+        head = self.game.snake.head()
+        x = head[0]
+        return self.width - 1 - x
+
     def get_upwards_proximity_to_boundry(self) -> float:
         head = self.game.snake.head()
         y = head[1]
-        return y / self.height
+        return 1.0 - y / self.height
 
     def get_left_proximity_to_boundry(self) -> float:
         head = self.game.snake.head()
@@ -35,18 +55,18 @@ class GameVision():
     def get_downwards_proximity_to_boundry(self) -> float:
         head = self.game.snake.head()
         y = head[1]
-        return 1.0 - y / self.height
+        return (y + 1) / self.height
 
     def get_right_proximity_to_boundry(self) -> float:
         head = self.game.snake.head()
         x = head[0]
-        return x / self.width
+        return (x + 1) / self.width
 
     def get_upwards_proximity_to_food(self) -> float:
         head = self.game.snake.head()
         food = self.game.food
-        if (head[0] == food[0] and head[1] < food[1]):
-            return 1.0 - ((food[1] - head[1] - 1) / self.height)
+        if (head[0] == food[0] and head[1] > food[1]):
+            return 1.0 - ((head[1] - food[1] - 1) / self.height)
         else:
             return 0.0
 
@@ -61,8 +81,8 @@ class GameVision():
     def get_downwards_proximity_to_food(self) -> float:
         head = self.game.snake.head()
         food = self.game.food
-        if (head[0] == food[0] and head[1] > food[1]):
-            return 1.0 - ((head[1] - food[1] - 1) / self.height)
+        if (head[0] == food[0] and head[1] < food[1]):
+            return 1.0 - ((food[1] - head[1] - 1) / self.height)
         else:
             return 0.0
 
@@ -73,3 +93,89 @@ class GameVision():
             return 1.0 - ((food[0] - head[0] - 1) / self.width)
         else:
             return 0.0
+
+### AHEAD METHODS ###
+    def get_food_distance_ahead(self) -> int:
+        ...
+    def get_food_proximity_ahead(self) -> float:
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.UNCHANGED): 
+            return -1
+        elif Movement.equals(direction, Movement.UP):
+            return self.get_upwards_proximity_to_food()
+        elif Movement.equals(direction, Movement.LEFT):
+            return self.get_left_proximity_to_food()
+        elif Movement.equals(direction, Movement.DOWN):
+            return self.get_downwards_proximity_to_food()
+        elif Movement.equals(direction, Movement.RIGHT):
+            return self.get_right_proximity_to_food()
+
+    def get_boundry_distance_ahead(self) -> int:
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.UNCHANGED): 
+            return -1
+        elif Movement.equals(direction, Movement.UP):
+            return self.get_upwards_distance_to_boundry()
+        elif Movement.equals(direction, Movement.LEFT):
+            return self.get_left_distance_to_boundry()
+        elif Movement.equals(direction, Movement.DOWN):
+            return self.get_downwards_distance_to_boundry()
+        elif Movement.equals(direction, Movement.RIGHT):
+            return self.get_right_distance_to_boundry()
+
+    def get_boundry_proximity_ahead(self) -> float:
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.UNCHANGED): 
+            return -1
+        elif Movement.equals(direction, Movement.UP):
+            return self.get_upwards_proximity_to_boundry()
+        elif Movement.equals(direction, Movement.LEFT):
+            return self.get_left_proximity_to_boundry()
+        elif Movement.equals(direction, Movement.DOWN):
+            return self.get_downwards_proximity_to_boundry()
+        elif Movement.equals(direction, Movement.RIGHT):
+            return self.get_right_proximity_to_boundry()
+
+### RELATIVE ###
+    def get_boundry_proximity_relative_left(self) -> float:
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.UNCHANGED): 
+            return -1
+        elif Movement.equals(direction, Movement.UP):
+            return self.get_left_proximity_to_boundry()
+        elif Movement.equals(direction, Movement.LEFT):
+            return self.get_downwards_proximity_to_boundry()
+        elif Movement.equals(direction, Movement.DOWN):
+            return self.get_right_proximity_to_boundry()
+        elif Movement.equals(direction, Movement.RIGHT):
+            return self.get_upwards_proximity_to_boundry()
+
+    def get_boundry_proximity_relative_right(self) -> float:
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.UNCHANGED): 
+            return -1
+        elif Movement.equals(direction, Movement.UP):
+            return self.get_right_proximity_to_boundry()
+        elif Movement.equals(direction, Movement.LEFT):
+            return self.get_upwards_proximity_to_boundry()
+        elif Movement.equals(direction, Movement.DOWN):
+            return self.get_left_proximity_to_boundry()
+        elif Movement.equals(direction, Movement.RIGHT):
+            return self.get_downwards_proximity_to_boundry()
+
+### COORDINATES ###
+    def get_nomalized_x_coordinate_food(self) -> float:
+        x = self.game.food[0]
+        return x / (self.width - 1)
+
+    def get_nomalized_y_coordinate_food(self) -> float:
+        y = self.game.food[1]
+        return y / (self.height - 1)
+
+    def get_nomalized_x_coordinate_head(self) -> float:
+        x = self.game.snake.head()[0]
+        return x / (self.width - 1)
+
+    def get_nomalized_y_coordinate_head(self) -> float:
+        y = self.game.snake.head()[1]
+        return y / (self.height - 1)
