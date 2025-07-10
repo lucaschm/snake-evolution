@@ -95,8 +95,8 @@ class GameVision():
             return 0.0
 
 ### AHEAD METHODS ###
-    def get_food_distance_ahead(self) -> int:
-        ...
+    # def get_food_distance_ahead(self) -> int:
+    #     ...
     def get_food_proximity_ahead(self) -> float:
         direction = self.game.snake.direction
         if Movement.equals(direction, Movement.UNCHANGED): 
@@ -162,6 +162,34 @@ class GameVision():
             return self.get_left_proximity_to_boundry()
         elif Movement.equals(direction, Movement.RIGHT):
             return self.get_downwards_proximity_to_boundry()
+
+    def get_food_proximity_relative_left(self) -> float:
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.UNCHANGED): 
+            return -1
+        elif Movement.equals(direction, Movement.UP):
+            return self.get_left_proximity_to_food()
+        elif Movement.equals(direction, Movement.LEFT):
+            return self.get_downwards_proximity_to_food()
+        elif Movement.equals(direction, Movement.DOWN):
+            return self.get_right_proximity_to_food()
+        elif Movement.equals(direction, Movement.RIGHT):
+            return self.get_upwards_proximity_to_food()
+
+    def get_food_proximity_relative_right(self) -> float:
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.UNCHANGED): 
+            return -1
+        elif Movement.equals(direction, Movement.UP):
+            return self.get_right_proximity_to_food()
+        elif Movement.equals(direction, Movement.LEFT):
+            return self.get_upwards_proximity_to_food()
+        elif Movement.equals(direction, Movement.DOWN):
+            return self.get_left_proximity_to_food()
+        elif Movement.equals(direction, Movement.RIGHT):
+            return self.get_downwards_proximity_to_food()
+
+
 
 ### COORDINATES ###
     def get_nomalized_x_coordinate_food(self) -> float:

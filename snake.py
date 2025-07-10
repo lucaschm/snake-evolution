@@ -13,9 +13,10 @@ class Movement():
         return (a == b).all()
 
 class Map():
-    def __init__(self, width, height):
+    def __init__(self, width, height, random_seed=None):
         self.width = width
         self.height = height
+        random.seed(random_seed)
 
     def get_center_coordinates(self):
         return [round(self.width/2.0), round(self.height/2.0)]
@@ -34,9 +35,9 @@ class Map():
         return [x, y]
 
 class Snake():
-    def __init__(self, x, y) -> None:
+    def __init__(self, x, y, start_direction=Movement.UNCHANGED) -> None:
         self.body = [np.array([x, y])]
-        self.direction = Movement.RIGHT
+        self.direction = start_direction
 
     def opposite_direction(self, move:Movement) -> bool:
         return Movement.equals(move + self.direction, Movement.UNCHANGED)
@@ -66,10 +67,10 @@ class Snake():
         return result
 
 class Game():
-    def __init__(self, width, height) -> None:
-        self.map = Map(width, height)
+    def __init__(self, width, height, random_seed=None) -> None:
+        self.map = Map(width, height, random_seed)
         center = self.map.get_center_coordinates()
-        self.snake = Snake(x=0, y=center[1])
+        self.snake = Snake(x=center[0], y=0, start_direction=Movement.DOWN)
         self.food = None
         self.generate_food()
         self.game_over = False

@@ -117,23 +117,15 @@ class Agent:
 
     def _get_inputs(self):
         inputs = [
-            self.game_vision.is_moving_up(),
-            self.game_vision.is_moving_left(),
-            self.game_vision.is_moving_down(),
-            self.game_vision.is_moving_right(),
-            self.game_vision.get_upwards_proximity_to_boundry(),
-            self.game_vision.get_left_proximity_to_boundry(),
-            self.game_vision.get_downwards_proximity_to_boundry(),
-            self.game_vision.get_right_proximity_to_boundry(),
-            self.game_vision.get_upwards_proximity_to_food(),
-            self.game_vision.get_left_proximity_to_food(),
-            self.game_vision.get_downwards_proximity_to_food(),
-            self.game_vision.get_right_proximity_to_food(),
 
-            self.game_vision.get_nomalized_x_coordinate_food(),
-            self.game_vision.get_nomalized_y_coordinate_food(),
-            self.game_vision.get_nomalized_x_coordinate_head(),
-            self.game_vision.get_nomalized_y_coordinate_head(),
+            self.game_vision.get_boundry_proximity_ahead(),
+            self.game_vision.get_boundry_proximity_relative_left(),
+            self.game_vision.get_boundry_proximity_relative_right(),
+
+            self.game_vision.get_food_proximity_ahead(),
+            self.game_vision.get_food_proximity_relative_left(),
+            self.game_vision.get_food_proximity_relative_right(),
+
         ]
         return inputs
 

@@ -11,7 +11,7 @@ reset_on_extinction   = True
 
 [DefaultGenome]
 num_hidden              = 2
-num_inputs              = 16
+num_inputs              = 6
 num_outputs             = 3
 initial_connection      = partial_direct 0.5
 # recurrent allowed
