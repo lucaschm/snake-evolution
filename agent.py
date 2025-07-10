@@ -10,6 +10,7 @@ import configparser
 from snake import Movement, Map, Snake, Game
 from game_vision import GameVision
 import visualize
+import checkpoint
 
 NEAT_CONFIG = 'neat-config'
 
@@ -172,7 +173,7 @@ class Agent:
         game_over_penalty = int(self.game.game_over)
         food_approach_balance = moves_towards_food - moves_away_from_food
 
-        return self.game.score + food_approach_balance / 10 - game_over_penalty * 10
+        return self.game.score + food_approach_balance / 10 - game_over_penalty * 5
 
     def get_coordinate_index(self, x, y):
         return self.game.map.width * y + x
@@ -245,36 +246,40 @@ class VisualizeBestAgentReporter(neat.reporting.BaseReporter):
         agent = Agent(net, Game(width=WIDTH, height=HEIGHT, random_seed=GAME_SEED))
         play_with_agent(agent, max_steps=self.max_steps, game_speed=self.game_speed)
 
+def train():
+    # Load neat config
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    neat_config = os.path.join(base_dir, NEAT_CONFIG)
+    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                        neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                        neat_config)
 
-# Load neat config
-base_dir = os.path.dirname(os.path.abspath(__file__))
-neat_config = os.path.join(base_dir, NEAT_CONFIG)
-config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                     neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                     neat_config)
+    # population
+    p = neat.Population(config)
 
-# population
-p = neat.Population(config)
+    # For console logging
+    p.add_reporter(neat.StdOutReporter(False))
 
-# For console logging
-p.add_reporter(neat.StdOutReporter(False))
-
-# Stats-Logger for visalization of the net
-stats = neat.StatisticsReporter()
-p.add_reporter(stats)
-#p.add_reporter(VisualizeBestAgentReporter(config=config, max_steps=100, game_speed=100))
+    # Stats-Logger for visalization of the net
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+    #p.add_reporter(VisualizeBestAgentReporter(config=config, max_steps=100, game_speed=100))
 
 
-# Run until a solution is found.
-winner = p.run(eval_genomes, 100) # up to X generations
+    # Run until a solution is found.
+    winner = p.run(eval_genomes, 100) # up to X generations
 
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-visualize.draw_net(config=config, genome=winner, filename=f".log/net/{timestamp}")
-visualize.plot_species(stats, filename=f".log/speciation/{timestamp}.svg")
-visualize.plot_stats(statistics=stats, filename=f".log/avg_fitness/{timestamp}.svg")
+    visualize.draw_net(config=config, genome=winner, filename=f".log/graph/{timestamp}")
+    visualize.plot_species(stats, filename=f".log/speciation/{timestamp}.svg")
+    visualize.plot_stats(statistics=stats, filename=f".log/avg_fitness/{timestamp}.svg")
+    checkpoint.save_genome(genome=winner, filename=f".log/net/{timestamp}.pkl")
 
-# execute 
-net = neat.nn.FeedForwardNetwork.create(winner, config)
-agent = Agent(net, Game(width=WIDTH, height=HEIGHT))
-play_with_agent(agent, max_steps=10000)
+    # execute 
+    net = neat.nn.FeedForwardNetwork.create(winner, config)
+    agent = Agent(net, Game(width=WIDTH, height=HEIGHT))
+    play_with_agent(agent, max_steps=10000)
+
+if __name__ == '__main__':
+    train()
