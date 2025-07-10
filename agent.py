@@ -16,6 +16,7 @@ NEAT_CONFIG = 'neat-config'
 # Map Size
 WIDTH = 25
 HEIGHT = 12
+GAME_SEED = 1
 
 # Constants
 CELL_SIZE = 40
@@ -174,7 +175,7 @@ def eval_genomes(genomes, config):
     
     for genome_id, genome in genomes:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
-        agent = Agent(net, Game(width=WIDTH, height=HEIGHT))
+        agent = Agent(net, Game(width=WIDTH, height=HEIGHT, random_seed=GAME_SEED))
         agent.run()
         genome.fitness = agent.fitness
 
@@ -235,7 +236,7 @@ class VisualizeBestAgentReporter(neat.reporting.BaseReporter):
 
     def post_evaluate(self, config, population, species, best_genome):
         net = neat.nn.FeedForwardNetwork.create(best_genome, self.config)
-        agent = Agent(net, Game(width=WIDTH, height=HEIGHT))
+        agent = Agent(net, Game(width=WIDTH, height=HEIGHT, random_seed=GAME_SEED))
         play_with_agent(agent, max_steps=self.max_steps, game_speed=self.game_speed)
 
 
