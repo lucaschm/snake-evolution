@@ -215,3 +215,25 @@ class GameVision():
 
         distance = (food[0] - head[0])**2 + (food[1] - head[1])**2
         return distance
+
+### INCLUDE TAIL ###
+    def get_obstacle_distance_ahead(self) -> float:
+        cursor = self.game.snake.head()
+        direction = self.game.snake.direction
+        boundry_distance = self.get_boundry_distance_ahead()
+        obstacle_distance = 0
+
+        for _ in range(boundry_distance):
+            cursor = cursor + direction
+            if self.game.snake.is_snake_body(cursor, ignore_tail_elemts=1):
+                break
+            obstacle_distance += 1
+        return obstacle_distance
+        
+    def get_obstacle_proximity_ahead(self) -> float:
+        obstacle_distance = self.get_obstacle_distance_ahead()
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.LEFT) or Movement.equals(direction, Movement.RIGHT):
+            return 1.0 - obstacle_distance / self.width
+        else:
+            return 1.0 - obstacle_distance / self.height
