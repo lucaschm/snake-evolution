@@ -20,7 +20,7 @@ GAME_SEED = 1
 
 # Constants
 CELL_SIZE = 40
-SPEED = 10
+SPEED = 50
 
 # Map colors
 COLOR_BG = (255, 255, 255)
@@ -262,11 +262,11 @@ p.add_reporter(neat.StdOutReporter(False))
 # Stats-Logger for visalization of the net
 stats = neat.StatisticsReporter()
 p.add_reporter(stats)
-p.add_reporter(VisualizeBestAgentReporter(config=config, max_steps=50, game_speed=50))
+#p.add_reporter(VisualizeBestAgentReporter(config=config, max_steps=100, game_speed=100))
 
 
 # Run until a solution is found.
-winner = p.run(eval_genomes, 25) # up to X generations
+winner = p.run(eval_genomes, 100) # up to X generations
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -277,4 +277,4 @@ visualize.plot_stats(statistics=stats, filename=f".log/avg_fitness/{timestamp}.s
 # execute 
 net = neat.nn.FeedForwardNetwork.create(winner, config)
 agent = Agent(net, Game(width=WIDTH, height=HEIGHT))
-play_with_agent(agent)
+play_with_agent(agent, max_steps=10000)
