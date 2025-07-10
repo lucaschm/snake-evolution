@@ -131,13 +131,26 @@ class Agent:
 
 
     def run(self):
-
         steps = 0
-        MAX_STEPS = 100
+        MAX_STEPS = 1000
         active_movements = 0
+        moves_towards_food = 0
+        moves_away_from_food = 0
         visited_fields = set()
         while not self.game.game_over:
-            active_movements += self.move()
+            
+            distance_before_move = self.game_vision.get_pythagorean_distance_to_food()
+
+            moved = self.move()
+            active_movements += moved
+
+            distance_after_move = self.game_vision.get_pythagorean_distance_to_food()
+            if (distance_after_move > distance_before_move and moved):
+                moves_towards_food += 1
+            elif (distance_after_move < distance_before_move and moved):
+                moves_away_from_food += 1
+            
+            # exploration bonus
             head = self.game.snake.head()
             field_index = self.get_coordinate_index(head[0], head[1])
             visited_fields.add(field_index)
@@ -147,9 +160,9 @@ class Agent:
                 break
         
         # Keep fitness positive
-        self.fitness = max(0.0, self.fitness_function(steps, active_movements, visited_fields))
+        self.fitness = max(0.0, self.fitness_function(steps, active_movements, visited_fields, moves_towards_food, moves_away_from_food))
 
-    def fitness_function(self, steps, active_movements, visited_fields):
+    def fitness_function(self, steps, active_movements, visited_fields, moves_towards_food, moves_away_from_food):
         map_size = self.game.map.width * self.game.map.height
 
         score_bonus = self.game.score / map_size
@@ -157,8 +170,9 @@ class Agent:
         movement_efficency = self.game.score / (active_movements + 0.000001)
         initial_movement_bonus = int(active_movements > 0)
         game_over_penalty = int(self.game.game_over)
+        food_approach_balance = moves_towards_food - moves_away_from_food
 
-        return 0.6 * score_bonus + 0.15 * exploration_bonus + 0.05 * initial_movement_bonus - 0.1 * game_over_penalty
+        return self.game.score + food_approach_balance / 10 - game_over_penalty * 10
 
     def get_coordinate_index(self, x, y):
         return self.game.map.width * y + x

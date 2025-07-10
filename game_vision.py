@@ -207,3 +207,11 @@ class GameVision():
     def get_nomalized_y_coordinate_head(self) -> float:
         y = self.game.snake.head()[1]
         return y / (self.height - 1)
+
+### DISTANCE TO FOOD ###
+    def get_pythagorean_distance_to_food(self) -> int:
+        head = self.game.snake.head()
+        food = self.game.food
+
+        distance = (food[0] - head[0])**2 + (food[1] - head[1])**2
+        return distance
