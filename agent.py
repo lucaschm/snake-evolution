@@ -271,6 +271,15 @@ def train():
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+    log_dirs= [
+        f".log/graph",
+        f".log/speciation",
+        f".log/avg_fitness",
+        f".log/net",
+    ]
+
+    for dir in log_dirs: os.makedirs(dir, exist_ok=True)
+
     visualize.draw_net(config=config, genome=winner, filename=f".log/graph/{timestamp}")
     visualize.plot_species(stats, filename=f".log/speciation/{timestamp}.svg")
     visualize.plot_stats(statistics=stats, filename=f".log/avg_fitness/{timestamp}.svg")
