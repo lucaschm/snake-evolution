@@ -22,22 +22,22 @@ class GameVision():
         direction = self.game.snake.direction
         return Movement.equals(direction, Movement.RIGHT)
 
-    def get_upwards_distance_to_boundry(self) -> float:
+    def get_upwards_distance_to_boundry(self) -> int:
         head = self.game.snake.head()
         y = head[1]
         return y
 
-    def get_left_distance_to_boundry(self) -> float:
+    def get_left_distance_to_boundry(self) -> int:
         head = self.game.snake.head()
         x = head[0]
         return x
 
-    def get_downwards_distance_to_boundry(self) -> float:
+    def get_downwards_distance_to_boundry(self) -> int:
         head = self.game.snake.head()
         y = head[1]
         return self.height - 1 - y 
 
-    def get_right_distance_to_boundry(self) -> float:
+    def get_right_distance_to_boundry(self) -> int:
         head = self.game.snake.head()
         x = head[0]
         return self.width - 1 - x
@@ -137,6 +137,32 @@ class GameVision():
             return self.get_right_proximity_to_boundry()
 
 ### RELATIVE ###
+    def get_boundry_distance_relative_left(self) -> int:
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.UNCHANGED): 
+            return -1
+        elif Movement.equals(direction, Movement.UP):
+            return self.get_left_distance_to_boundry()
+        elif Movement.equals(direction, Movement.LEFT):
+            return self.get_downwards_distance_to_boundry()
+        elif Movement.equals(direction, Movement.DOWN):
+            return self.get_right_distance_to_boundry()
+        elif Movement.equals(direction, Movement.RIGHT):
+            return self.get_upwards_distance_to_boundry()
+
+    def get_boundry_distance_relative_right(self) -> int:
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.UNCHANGED): 
+            return -1
+        elif Movement.equals(direction, Movement.UP):
+            return self.get_right_distance_to_boundry()
+        elif Movement.equals(direction, Movement.LEFT):
+            return self.get_upwards_distance_to_boundry()
+        elif Movement.equals(direction, Movement.DOWN):
+            return self.get_left_distance_to_boundry()
+        elif Movement.equals(direction, Movement.RIGHT):
+            return self.get_downwards_distance_to_boundry()
+
     def get_boundry_proximity_relative_left(self) -> float:
         direction = self.game.snake.direction
         if Movement.equals(direction, Movement.UNCHANGED): 
@@ -217,7 +243,7 @@ class GameVision():
         return distance
 
 ### INCLUDE TAIL ###
-    def get_obstacle_distance_ahead(self) -> float:
+    def get_obstacle_distance_ahead(self) -> int:
         cursor = self.game.snake.head()
         direction = self.game.snake.direction
         boundry_distance = self.get_boundry_distance_ahead()
@@ -237,3 +263,66 @@ class GameVision():
             return 1.0 - obstacle_distance / self.width
         else:
             return 1.0 - obstacle_distance / self.height
+
+    def get_obstacle_distance_relative_left(self) -> int:
+        cursor = self.game.snake.head()
+        direction = self.game.snake.direction
+
+        if Movement.equals(direction, Movement.UP):
+            direction =  Movement.LEFT
+        elif Movement.equals(direction, Movement.LEFT):
+            direction =  Movement.DOWN
+        elif Movement.equals(direction, Movement.DOWN):
+            direction =  Movement.RIGHT
+        elif Movement.equals(direction, Movement.RIGHT):
+            direction =  Movement.UP
+
+        boundry_distance = self.get_boundry_distance_relative_left()
+        obstacle_distance = 0
+
+        for _ in range(boundry_distance):
+            cursor = cursor + direction
+            if self.game.snake.is_snake_body(cursor, ignore_tail_elemts=1):
+                break
+            obstacle_distance += 1
+        return obstacle_distance
+
+    def get_obstacle_proximity_relative_left(self) -> float:
+        obstacle_distance = self.get_obstacle_distance_relative_left()
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.LEFT) or Movement.equals(direction, Movement.RIGHT):
+            return 1.0 - obstacle_distance / self.height
+        else:
+            return 1.0 - obstacle_distance / self.width
+
+    def get_obstacle_distance_relative_right(self) -> int:
+        cursor = self.game.snake.head()
+        direction = self.game.snake.direction
+
+        if Movement.equals(direction, Movement.UP):
+            direction = Movement.RIGHT
+        elif Movement.equals(direction, Movement.LEFT):
+            direction = Movement.UP
+        elif Movement.equals(direction, Movement.DOWN):
+            direction = Movement.LEFT
+        elif Movement.equals(direction, Movement.RIGHT):
+            direction = Movement.DOWN
+
+        boundry_distance = self.get_boundry_distance_relative_right()
+        obstacle_distance = 0
+
+        for _ in range(boundry_distance):
+            cursor = cursor + direction
+            if self.game.snake.is_snake_body(cursor, ignore_tail_elemts=1):
+                break
+            obstacle_distance += 1
+        return obstacle_distance
+
+    def get_obstacle_proximity_relative_right(self) -> float:
+        obstacle_distance = self.get_obstacle_distance_relative_right()
+        direction = self.game.snake.direction
+        if Movement.equals(direction, Movement.LEFT) or Movement.equals(direction, Movement.RIGHT):
+            return 1.0 - obstacle_distance / self.height
+        else:
+            return 1.0 - obstacle_distance / self.width
+
