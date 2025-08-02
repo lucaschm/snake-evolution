@@ -46,6 +46,7 @@ def is_relative_control_method() -> bool:
 
 # Movement control method
 RELATIVE_CONTROLS = is_relative_control_method()
+REALTIVE_INPUTS = True
 
 class Agent:
     
@@ -117,11 +118,17 @@ class Agent:
         return output > 0 # this means that agent has changed the direction
 
     def _get_inputs(self):
+        if REALTIVE_INPUTS:
+            return self._get_relative_inputs()
+        else:
+            return self._get_absolute_inputs()
+
+    def _get_relative_inputs(self):
         inputs = [
 
-            self.game_vision.get_boundry_proximity_ahead(),
-            self.game_vision.get_boundry_proximity_relative_left(),
-            self.game_vision.get_boundry_proximity_relative_right(),
+            self.game_vision.get_obstacle_proximity_ahead(),
+            self.game_vision.get_obstacle_proximity_relative_left(),
+            self.game_vision.get_obstacle_proximity_relative_right(),
 
             self.game_vision.get_food_proximity_ahead(),
             self.game_vision.get_food_proximity_relative_left(),
@@ -130,10 +137,32 @@ class Agent:
         ]
         return inputs
 
+    def _get_absolute_inputs(self):
+        inputs = [
+
+            self.game_vision.is_moving_up(),
+            self.game_vision.is_moving_left(),
+            self.game_vision.is_moving_down(),
+            self.game_vision.is_moving_right(),
+
+            self.game_vision.get_upwards_proximity_to_boundry(),
+            self.game_vision.get_left_proximity_to_boundry(),
+            self.game_vision.get_downwards_proximity_to_boundry(),
+            self.game_vision.get_right_proximity_to_boundry(),
+
+            self.game_vision.get_upwards_proximity_to_food(),
+            self.game_vision.get_left_proximity_to_food(),
+            self.game_vision.get_downwards_proximity_to_food(),
+            self.game_vision.get_right_proximity_to_food(),
+
+        ]
+        return inputs
 
     def run(self):
         steps = 0
-        MAX_STEPS = 1000
+        steps_scince_eaten = 0
+        last_game_score = 0
+        MAX_STEPS = 10000
         active_movements = 0
         moves_towards_food = 0
         moves_away_from_food = 0
@@ -156,8 +185,14 @@ class Agent:
             field_index = self.get_coordinate_index(head[0], head[1])
             visited_fields.add(field_index)
 
+            steps_scince_eaten += 1
+            # if snake has eaten food
+            if self.game.score > last_game_score:
+                last_game_score = self.game.score
+                steps_scince_eaten = 0
+
             steps += 1
-            if steps > MAX_STEPS:
+            if steps > MAX_STEPS or steps_scince_eaten > 2*(WIDTH + HEIGHT):
                 break
         
         # Keep fitness positive
@@ -173,7 +208,7 @@ class Agent:
         game_over_penalty = int(self.game.game_over)
         food_approach_balance = moves_towards_food - moves_away_from_food
 
-        return self.game.score + food_approach_balance / 10 - game_over_penalty * 5
+        return self.game.score #+ food_approach_balance / 10 - game_over_penalty * 5
 
     def get_coordinate_index(self, x, y):
         return self.game.map.width * y + x
