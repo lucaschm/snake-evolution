@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_stats(statistics, ylog=False, view=False, filename='avg_fitness.svg'):
+def plot_stats(statistics, ylog=False, view=False, filename='avg_fitness.svg', map_width='?', map_height='?', game_seed='?', num_inputs='?', num_outputs='?'):
     """ Plots the population's average and best fitness. """
+    fig = plt.figure()
     if plt is None:
         warnings.warn("This display is not available due to a missing optional dependency (matplotlib)")
         return
@@ -21,7 +22,12 @@ def plot_stats(statistics, ylog=False, view=False, filename='avg_fitness.svg'):
     plt.plot(generation, avg_fitness + stdev_fitness, 'g-.', label="+1 sd")
     plt.plot(generation, best_fitness, 'r-', label="best")
 
-    plt.title("Population's average and best fitness")
+
+    fig.suptitle("Population's average and best fitness", fontsize=16)
+    # Figure subtitle
+    fig.text(0.5, 0.9, f"Map size: {map_width}x{map_height}; Seed: {game_seed}; num_inputs: {num_inputs}; num_outputs: {num_outputs}", 
+    horizontalalignment="center")
+
     plt.xlabel("Generations")
     plt.ylabel("Fitness")
     plt.grid()

@@ -15,9 +15,9 @@ import checkpoint
 NEAT_CONFIG = 'neat-config'
 
 # Map Size
-WIDTH = 25
-HEIGHT = 12
-GAME_SEED = 1
+WIDTH = 11
+HEIGHT = 6
+GAME_SEED = None
 
 # Constants
 CELL_SIZE = 40
@@ -30,23 +30,27 @@ COLOR_FOOD = (230, 100, 100)
 COLOR_GRID = (225, 225, 225)
 
 def is_relative_control_method() -> bool:
+    global NUM_INPUTS
+    global NUM_OUTPUTS
+
     # Create a parser and read the file
     config = configparser.ConfigParser()
     config.read(NEAT_CONFIG)
 
-    # Get num_outputs from the DefaultGenome section
-    num_outputs = int(config['DefaultGenome']['num_outputs'])
+    # Get values from the DefaultGenome section
+    NUM_INPUTS = int(config['DefaultGenome']['num_inputs'])
+    NUM_OUTPUTS = int(config['DefaultGenome']['num_outputs'])
 
-    print("num_outputs:", num_outputs)
+    print("num_inputs:", NUM_INPUTS)
+    print("num_outputs:", NUM_OUTPUTS)
 
-    if (num_outputs == 3): return True
-    elif (num_outputs == 5): return False
+    if (NUM_INPUTS == 6 and NUM_OUTPUTS == 3): return True
+    elif (NUM_INPUTS == 12 and NUM_OUTPUTS == 5): return False
     else: raise ValueError("num_outputs in the neat config is wrong!")
 
 
 # Movement control method
 RELATIVE_CONTROLS = is_relative_control_method()
-REALTIVE_INPUTS = True
 
 class Agent:
     
@@ -118,21 +122,29 @@ class Agent:
         return output > 0 # this means that agent has changed the direction
 
     def _get_inputs(self):
-        if REALTIVE_INPUTS:
+        if RELATIVE_CONTROLS:
             return self._get_relative_inputs()
         else:
             return self._get_absolute_inputs()
 
     def _get_relative_inputs(self):
+        obstacle_proximity_ahead = self.game_vision.get_obstacle_proximity_ahead()
+        obstacle_proximity_relative_left = self.game_vision.get_obstacle_proximity_relative_left()
+        obstacle_proximity_relative_right = self.game_vision.get_obstacle_proximity_relative_right()
+
+        food_proximit_ahead = self.game_vision.get_food_proximity_ahead()
+        food_proximit_relative_left = self.game_vision.get_food_proximity_relative_left()
+        food_proximit_relative_right = self.game_vision.get_food_proximity_relative_right()
+
         inputs = [
 
-            self.game_vision.get_obstacle_proximity_ahead(),
-            self.game_vision.get_obstacle_proximity_relative_left(),
-            self.game_vision.get_obstacle_proximity_relative_right(),
+            obstacle_proximity_ahead,
+            obstacle_proximity_relative_left,
+            obstacle_proximity_relative_right,
 
-            self.game_vision.get_food_proximity_ahead(),
-            self.game_vision.get_food_proximity_relative_left(),
-            self.game_vision.get_food_proximity_relative_right(),
+            max(obstacle_proximity_ahead, food_proximit_ahead),
+            max(obstacle_proximity_relative_left, food_proximit_relative_left),
+            max(obstacle_proximity_relative_right, food_proximit_relative_right),
 
         ]
         return inputs
@@ -192,7 +204,7 @@ class Agent:
                 steps_scince_eaten = 0
 
             steps += 1
-            if steps > MAX_STEPS or steps_scince_eaten > 2*(WIDTH + HEIGHT):
+            if steps > MAX_STEPS or steps_scince_eaten > (WIDTH * HEIGHT):
                 break
         
         # Keep fitness positive
@@ -302,7 +314,7 @@ def train():
 
 
     # Run until a solution is found.
-    winner = p.run(eval_genomes, 100) # up to X generations
+    winner = p.run(eval_genomes, 1000) # up to X generations
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -317,7 +329,10 @@ def train():
 
     visualize.draw_net(config=config, genome=winner, filename=f".log/graph/{timestamp}")
     visualize.plot_species(stats, filename=f".log/speciation/{timestamp}.svg")
-    visualize.plot_stats(statistics=stats, filename=f".log/avg_fitness/{timestamp}.svg")
+    visualize.plot_stats(
+        statistics=stats, filename=f".log/avg_fitness/{timestamp}.svg", 
+        map_height=HEIGHT, map_width=WIDTH, 
+        game_seed=GAME_SEED, num_inputs=NUM_INPUTS, num_outputs=NUM_OUTPUTS)
     checkpoint.save_genome(genome=winner, filename=f".log/net/{timestamp}.pkl")
 
     # execute 
