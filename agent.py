@@ -15,8 +15,8 @@ import checkpoint
 NEAT_CONFIG = 'neat-config'
 
 # Map Size
-WIDTH = 11
-HEIGHT = 6
+WIDTH = 25
+HEIGHT = 12
 GAME_SEED = None
 
 # Constants
@@ -267,7 +267,11 @@ def play_with_agent(agent, max_steps=1000, game_speed=SPEED):
     clock = pygame.time.Clock()
 
     steps = 0
-    while steps < max_steps:
+    steps_scince_eaten = 0
+    max_steps_without_eating = game.map.width * game.map.height
+    last_game_score = 0
+
+    while not game.game_over:
         move = agent.move()
 
         screen.fill(COLOR_BG)
@@ -279,8 +283,19 @@ def play_with_agent(agent, max_steps=1000, game_speed=SPEED):
         pygame.display.flip()
         clock.tick(game_speed)
 
+        steps_scince_eaten += 1
+        # if snake has eaten food
+        if game.score > last_game_score:
+            last_game_score = game.score
+            steps_scince_eaten = 0
+
         steps += 1
+        if steps > max_steps or steps_scince_eaten > max_steps_without_eating:
+            break
+    print(f"Final Score: {game.score}")
+    time.sleep(2)
     pygame.quit()
+    return game.score
 
 class VisualizeBestAgentReporter(neat.reporting.BaseReporter):
     def __init__(self, config, max_steps=1000, game_speed=SPEED):
@@ -314,7 +329,7 @@ def train():
 
 
     # Run until a solution is found.
-    winner = p.run(eval_genomes, 1000) # up to X generations
+    winner = p.run(eval_genomes, 100) # up to X generations
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
